@@ -28,7 +28,11 @@ function test_bin_consistency(grid; N = 200, scale = 10.0)
     end
 end
 
-test_bin_consistency(RectangleGrid())
+@testset "rectangle grids" begin
+    grid = RectangleGrid()
+    test_bin_consistency(grid)
+    @test bin_area(grid) == 1
+end
 
 using JET
 @testset "static analysis with JET.jl" begin

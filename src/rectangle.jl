@@ -1,7 +1,13 @@
 export RectangleGrid
 
+"""
+A grid of rectangles with area 1, centered on the origin.
+"""
 struct RectangleGrid end
 
+"""
+The rectangle ``x ± 0.5, y ± 0.5``.
+"""
 struct RectangleBin
     x::Int
     y::Int
