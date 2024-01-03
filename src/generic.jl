@@ -77,7 +77,7 @@ Calculate the area of a bin in `grid` using type `T` (default = `Float64`).
 
 Note: all bins in a grid have the same area.
 """
-bin_area(grid) = area(Float64, grid)
+bin_area(grid) = bin_area(Float64, grid)
 
 """
 $(FUNCTIONNAME)(bin, xy)
