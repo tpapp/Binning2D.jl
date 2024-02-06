@@ -58,10 +58,20 @@ function merge_mass(mass1::Mass, mass2::Mass)
     Mass(x + α * (mass2.x - x), y + α * (mass2.y - y), M)
 end
 
+function Base.:(/)(mass::Mass, b::Real)
+    (; x, y, m) = mass
+    Mass(x, y, m / b)
+end
+
 struct BinnedBivariate{TX,TY,T,TM<:Matrix{Mass{T}}} <: AbstractVector{Tuple{T,T,T}}
     x_boundaries::TX
     y_boundaries::TY
     masses::TM
+end
+
+function Base.:(/)(bb::BinnedBivariate, b::Real)
+    (; x_boundaries, y_boundaries, masses) = bb
+    BinnedBivariate(x_boundaries, y_boundaries, masses ./ b)
 end
 
 Base.size(bb::BinnedBivariate) = (length(bb.masses), )
