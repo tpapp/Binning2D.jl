@@ -2,7 +2,7 @@
 #### transformations
 ####
 
-export nice_quantiles, bin_bivariate
+export nice_quantiles, bin_bivariate, get_x_y_w
 
 struct NiceQuantiles{T,TB<:AbstractVector{T}} <: AbstractVector{T}
     boundaries::TB
@@ -63,21 +63,22 @@ function Base.:(/)(mass::Mass, b::Real)
     Mass(x, y, m / b)
 end
 
-struct BinnedBivariate{TX,TY,T,TM<:Matrix{Mass{T}}} <: AbstractVector{Tuple{T,T,T}}
+struct BinnedBivariate{T,TX,TY,TM<:Matrix{Mass{T}}}
     x_boundaries::TX
     y_boundaries::TY
+    "masses, with weighs summing to 1"
     masses::TM
+    "the largest weight"
+    max_w::T
 end
 
-function Base.:(/)(bb::BinnedBivariate, b::Real)
-    (; x_boundaries, y_boundaries, masses) = bb
-    BinnedBivariate(x_boundaries, y_boundaries, masses ./ b)
-end
+"""
+$(SIGNATURES)
 
-Base.size(bb::BinnedBivariate) = (length(bb.masses), )
+Bin bivariate data `x, y` using the given boundaries.
 
-Base.getindex(bb::BinnedBivariate, i::Int) = (m = bb.masses[i]; (m.x, m.y, m.m))
-
+Return a `BinnedBivariate` object. See [`get_x_y_w`](@ref).
+"""
 function bin_bivariate(x, x_boundaries, y, y_boundaries)
     N = length(x)
     @argcheck N == length(y)
@@ -89,5 +90,21 @@ function bin_bivariate(x, x_boundaries, y, y_boundaries)
         iy = searchsortedfirst(y_boundaries, y)
         masses[ix, iy] = merge_mass(masses[ix, iy], Mass(x, y, 1.0))
     end
-    BinnedBivariate(x_boundaries, y_boundaries, masses)
+    masses ./= N
+    BinnedBivariate(x_boundaries, y_boundaries, masses,
+                    maximum(x -> x.m, masses))
 end
+
+"""
+$(SIGNATURES)
+
+Return an iterator that yields `(x, y, w)` triplets, keeping only `w ≥ threshold`.
+
+When `threshold == 0`, `w`s sum to 1, but this is not maintained. The purpose is to
+remove outliers for plots, with `threshold = 1e-3` or similar.
+"""
+function get_x_y_w(bb::BinnedBivariate{T}; threshold = zero(T), scale = one(T)) where T
+    ((m.x, m.y, m.m * scale) for m in bb.masses if m.m ≥ threshold)
+end
+
+Base.length(bb::BinnedBivariate) = length(bb.masses)
