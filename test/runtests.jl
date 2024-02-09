@@ -47,7 +47,9 @@ end
     by = nice_quantiles(y, 10)
     @test length(by) == 5
     bb = bin_bivariate(x, bx, y, by)
-    @test sum(x -> x[3], bb) == N
+    @test sum(last, get_x_y_w(bb)) ≈ 1
+    @test sum(last, get_x_y_w(bb; scale = 2)) ≈ 2
+    @test sum(last, get_x_y_w(bb; threshold = 0.01)) < 1
 end
 
 using JET
