@@ -2,7 +2,7 @@ using Binning2D
 using Test
 using PolygonOps
 
-using Binning2D: point
+using Binning2D: point, merge_mass, Mass
 
 ####
 #### bin interfaces
@@ -62,4 +62,15 @@ end
     Aqua.test_all(Binning2D; ambiguities = false)
     # testing separately, cf https://github.com/JuliaTesting/Aqua.jl/issues/77
     Aqua.test_ambiguities(Binning2D)
+end
+
+@testset "merging masses" begin
+    m = [Mass(randn(), randn(), abs(randn()) + 0.1) for _ in 1:1000]
+    ∑w = sum(m -> m.m, m)
+    x̄ = sum(m -> m.m * m.x, m) / ∑w
+    ȳ = sum(m -> m.m * m.y, m) / ∑w
+    m̄ = foldl(merge_mass, m)
+    @test m̄.x ≈ x̄
+    @test m̄.y ≈ ȳ
+    @test m̄.m ≈ ∑w
 end
