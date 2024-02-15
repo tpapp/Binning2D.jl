@@ -54,7 +54,7 @@ end
 function merge_mass(mass1::Mass, mass2::Mass)
     (; x, y, m) = mass1
     M = m + mass2.m
-    α = m / M
+    α = mass2.m / M
     Mass(x + α * (mass2.x - x), y + α * (mass2.y - y), M)
 end
 
@@ -104,7 +104,7 @@ When `threshold == 0`, `w`s sum to 1, but this is not maintained. The purpose is
 remove outliers for plots, with `threshold = 1e-3` or similar.
 """
 function get_x_y_w(bb::BinnedBivariate{T}; threshold = zero(T), scale = one(T)) where T
-    ((m.x, m.y, m.m * scale) for m in bb.masses if m.m ≥ threshold)
+    ((m.x, m.y, m.m * scale) for m in bb.masses if m.m > threshold)
 end
 
 Base.length(bb::BinnedBivariate) = length(bb.masses)
